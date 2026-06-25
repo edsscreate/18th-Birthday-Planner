@@ -217,6 +217,16 @@
     .field textarea{min-height:88px;resize:vertical}
     .modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:19px}
     .modal-note{font-size:.76rem;color:var(--muted);margin:0 0 14px;line-height:1.45}
+    .settings-divider{height:1px;background:var(--line);margin:4px 0 2px}
+    .settings-label{font-size:.78rem;font-weight:800;color:#61727C;margin:0 0 3px}
+    .settings-help{font-size:.74rem;color:var(--muted);line-height:1.45;margin:0 0 10px}
+    .settings-actions{display:flex;gap:9px;flex-wrap:wrap}
+    .settings-actions .btn{padding:10px 12px;font-size:.82rem}
+    .category-editor{display:grid;gap:8px}
+    .category-editor-row{display:grid;grid-template-columns:1fr 36px;gap:8px;align-items:center}
+    .category-editor-row input{padding:9px 10px}
+    .category-remove{width:36px;height:36px;border:0;border-radius:10px;background:#FFF0E8;color:#B0694F;font-size:1.05rem}
+    .category-add{margin-top:8px}
     .budget-top-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
     .budget-hero,.budget-health-card{padding:24px;min-height:220px;display:flex;flex-direction:column;justify-content:space-between}
     .budget-hero{background:linear-gradient(135deg,#FFFFFF 0%,#F0F7F9 100%)}
@@ -305,6 +315,8 @@
       .field.full{grid-column:auto}
       dialog{max-width:calc(100vw - 20px);border-radius:19px}
       .modal{padding:18px}
+      .settings-actions{display:grid;grid-template-columns:1fr}
+      .settings-actions .btn{width:100%}
       .modal-foot{flex-direction:column-reverse}
       .modal-foot .btn{width:100%}
     }
@@ -317,7 +329,7 @@
         <div class="brand-icon">✦</div>
         <div>
           <h1 id="brandTitle">18th Birthday Planner</h1>
-          <p id="brandSubtitle">by Edss Create.</p>
+          <p id="brandSubtitle">Plan every detail for a milestone celebration.</p>
         </div>
       </div>
       <div class="top-actions">
@@ -618,27 +630,55 @@
   <dialog id="settingsModal">
     <form class="modal" id="settingsForm">
       <div class="modal-head">
-        <h3>Celebrant details</h3>
+        <h3>Customize planner</h3>
         <button class="close-modal" type="button" data-close="settingsModal" aria-label="Close">×</button>
       </div>
-      <p class="modal-note">Add the celebrant’s name and celebration date so the planner feels more personal.</p>
+      <p class="modal-note">Editable ito per user—puwedeng palitan ang title, celebrant details, budget, at checklist categories.</p>
       <div class="form-grid">
+        <div class="field full">
+          <label for="plannerTitleInput">Planner title</label>
+          <input id="plannerTitleInput" maxlength="80" placeholder="e.g., 18th Birthday Planner">
+        </div>
+        <div class="field full">
+          <label for="plannerSubtitleInput">Planner subtitle</label>
+          <input id="plannerSubtitleInput" maxlength="120" placeholder="e.g., Plan every detail for a milestone celebration.">
+        </div>
         <div class="field full">
           <label for="coupleNamesInput">Celebrant name</label>
           <input id="coupleNamesInput" maxlength="80" placeholder="e.g., Allanis">
         </div>
-        <div class="field full">
-          <label for="weddingDateInput">18th birthday celebration date</label>
+        <div class="field">
+          <label for="weddingDateInput">Celebration date</label>
           <input id="weddingDateInput" type="date">
         </div>
-        <div class="field full">
-          <label for="overallBudgetInput">Overall celebration budget (₱)</label>
+        <div class="field">
+          <label for="overallBudgetInput">Overall budget (₱)</label>
           <input id="overallBudgetInput" type="number" min="0" step="0.01" placeholder="e.g., 300000">
+        </div>
+
+        <div class="field full">
+          <div class="settings-divider"></div>
+          <p class="settings-label">Editable checklist categories</p>
+          <p class="settings-help">Palitan, dagdagan, o tanggalin ang sections. Tasks under a deleted section will move to the first available category.</p>
+          <div id="categoryEditorList" class="category-editor"></div>
+          <button type="button" class="btn btn-soft category-add" id="addCategoryRow">＋ Add category</button>
+        </div>
+
+        <div class="field full">
+          <div class="settings-divider"></div>
+          <p class="settings-label">Backup & transfer</p>
+          <p class="settings-help">Export para mailipat sa ibang phone or browser. Kapag na-import, papalitan nito ang current planner data.</p>
+          <div class="settings-actions">
+            <button type="button" class="btn btn-outline" id="exportPlannerData">⇩ Export backup</button>
+            <button type="button" class="btn btn-outline" id="importPlannerData">⇧ Import backup</button>
+            <button type="button" class="btn btn-danger" id="resetPlannerData">↺ Start fresh</button>
+          </div>
+          <input id="importPlannerFile" type="file" accept="application/json,.json" hidden>
         </div>
       </div>
       <div class="modal-foot">
         <button type="button" class="btn btn-outline" data-close="settingsModal">Cancel</button>
-        <button type="submit" class="btn btn-primary">Save details</button>
+        <button type="submit" class="btn btn-primary">Save customization</button>
       </div>
     </form>
   </dialog>
@@ -647,7 +687,9 @@
 
   <script>
     const STORAGE_KEY = "pastelWeddingPlanner_v1";
-    const CATEGORIES = ["Theme & Venue", "Suppliers", "Attire & Glam", "Invitations", "Guest List", "18 Traditions", "Program", "Food & Catering", "Decor & Styling", "Other"];
+    const DEFAULT_PLANNER_TITLE = "18th Birthday Planner";
+    const DEFAULT_PLANNER_SUBTITLE = "Plan every detail for a milestone celebration.";
+    const DEFAULT_CATEGORIES = ["Theme & Venue", "Suppliers", "Attire & Glam", "Invitations", "Guest List", "18 Traditions", "Program", "Food & Catering", "Decor & Styling", "Other"];
 
     const initialTasks = [
       {id:"t1",title:"Set the celebration date, time, and venue",category:"Theme & Venue",status:"To do",due:"",budget:0,paid:0,notes:""},
@@ -663,7 +705,17 @@
       {id:"t11",title:"Confirm backdrop, stage styling, balloons, flowers, and table setup",category:"Decor & Styling",status:"To do",due:"",budget:0,paid:0,notes:""}
     ];
 
-    const fallbackState = {coupleNames:"",weddingDate:"",overallBudget:0,tasks:initialTasks,guests:[]};
+    const fallbackState = {
+      plannerTitle:DEFAULT_PLANNER_TITLE,
+      plannerSubtitle:DEFAULT_PLANNER_SUBTITLE,
+      coupleNames:"",
+      weddingDate:"",
+      overallBudget:0,
+      categories:DEFAULT_CATEGORIES,
+      tasks:initialTasks,
+      guests:[]
+    };
+    const uid = prefix => `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     let state = loadState();
 
     const $ = (selector) => document.querySelector(selector);
@@ -673,23 +725,50 @@
     const shortDateFormatter = new Intl.DateTimeFormat("en-PH",{month:"short",day:"numeric",year:"numeric"});
 
     function cloneDefaults(){ return JSON.parse(JSON.stringify(fallbackState)); }
+    function normalizeCategories(categories){
+      const list = Array.isArray(categories) ? categories : DEFAULT_CATEGORIES;
+      const unique = [];
+      list.forEach(item=>{
+        const name = String(item || "").trim().slice(0,60);
+        if(name && !unique.some(existing=>existing.toLowerCase()===name.toLowerCase())) unique.push(name);
+      });
+      return unique.length ? unique : ["Other"];
+    }
+    function normalizeState(saved){
+      const defaults = cloneDefaults();
+      const categories = normalizeCategories(saved?.categories);
+      const fallbackCategory = categories.includes("Other") ? "Other" : categories[0];
+      const tasks = Array.isArray(saved?.tasks) ? saved.tasks.map(task=>({
+        id:task?.id || uid("task"),
+        title:String(task?.title || "").slice(0,100),
+        category:categories.includes(task?.category) ? task.category : fallbackCategory,
+        status:["To do","Ongoing","Done"].includes(task?.status) ? task.status : "To do",
+        due:task?.due || "",
+        budget:Math.max(0,Number(task?.budget || 0)),
+        paid:Math.max(0,Number(task?.paid || 0)),
+        notes:String(task?.notes || "").slice(0,400)
+      })) : defaults.tasks;
+      const guests = Array.isArray(saved?.guests) ? saved.guests : defaults.guests;
+      return {
+        plannerTitle:String(saved?.plannerTitle || defaults.plannerTitle).trim().slice(0,80) || DEFAULT_PLANNER_TITLE,
+        plannerSubtitle:String(saved?.plannerSubtitle || defaults.plannerSubtitle).trim().slice(0,120) || DEFAULT_PLANNER_SUBTITLE,
+        coupleNames:String(saved?.coupleNames || "").trim().slice(0,80),
+        weddingDate:saved?.weddingDate || "",
+        overallBudget:Math.max(0,Number(saved?.overallBudget || 0)),
+        categories,
+        tasks,
+        guests
+      };
+    }
     function loadState(){
       try{
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if(!saved || typeof saved !== "object") return cloneDefaults();
-        return {
-          coupleNames: saved.coupleNames || "",
-          weddingDate: saved.weddingDate || "",
-          overallBudget: Math.max(0, Number(saved.overallBudget || 0)),
-          tasks: Array.isArray(saved.tasks) ? saved.tasks : initialTasks,
-          guests: Array.isArray(saved.guests) ? saved.guests : []
-        };
+        return saved && typeof saved === "object" ? normalizeState(saved) : cloneDefaults();
       }catch(error){ return cloneDefaults(); }
     }
     function saveState(){
       localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
     }
-    function uid(prefix){ return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
     function escapeHTML(value=""){
       return String(value).replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));
     }
@@ -724,15 +803,20 @@
     }
     function closeDialog(id){ document.getElementById(id).close(); }
 
-    function populateCategoryOptions(selected="Venue"){
-      $("#taskCategoryInput").innerHTML = CATEGORIES.map(category =>
-        `<option ${category === selected ? "selected" : ""}>${category}</option>`
+    function populateCategoryOptions(selected){
+      const fallback = state.categories[0] || "Other";
+      const active = state.categories.includes(selected) ? selected : fallback;
+      $("#taskCategoryInput").innerHTML = state.categories.map(category =>
+        `<option value="${escapeHTML(category)}" ${category === active ? "selected" : ""}>${escapeHTML(category)}</option>`
       ).join("");
     }
     function renderBrand(){
-      const title = state.coupleNames ? `${escapeHTML(state.coupleNames)}’s 18th Birthday Planner` : "18th Birthday Planner";
+      const plannerTitle = state.plannerTitle || DEFAULT_PLANNER_TITLE;
+      const title = state.coupleNames ? `${escapeHTML(state.coupleNames)}’s ${escapeHTML(plannerTitle)}` : escapeHTML(plannerTitle);
       $("#brandTitle").innerHTML = title;
-      $("#brandSubtitle").textContent = state.weddingDate ? `18th birthday celebration date: ${formatDate(state.weddingDate)}` : "Plan every detail for a milestone celebration.";
+      $("#brandSubtitle").textContent = state.weddingDate
+        ? `Celebration date: ${formatDate(state.weddingDate)}`
+        : (state.plannerSubtitle || DEFAULT_PLANNER_SUBTITLE);
     }
     function getMetrics(){
       const total = state.tasks.length;
@@ -800,7 +884,7 @@
       renderDeadlines();
     }
     function renderCategoryProgress(){
-      const visibleCategories = CATEGORIES.filter(cat=>state.tasks.some(task=>task.category === cat));
+      const visibleCategories = state.categories.filter(cat=>state.tasks.some(task=>task.category === cat));
       const target = $("#categoryProgress");
       if(!visibleCategories.length){
         target.innerHTML = `<div class="empty-state">No checklist items yet. Add a task and your category progress will appear here.</div>`;
@@ -845,7 +929,7 @@
     function rebuildTaskCategoryFilter(){
       const filter = $("#taskCategoryFilter");
       const activeValue = filter.value || "all";
-      filter.innerHTML = `<option value="all">All categories</option>` + CATEGORIES
+      filter.innerHTML = `<option value="all">All categories</option>` + state.categories
         .filter(category=>state.tasks.some(task=>task.category===category))
         .map(category=>`<option value="${escapeHTML(category)}">${escapeHTML(category)}</option>`).join("");
       filter.value = [...filter.options].some(option=>option.value===activeValue) ? activeValue : "all";
@@ -963,7 +1047,7 @@
         ? (m.differenceFromTarget >= 0 ? "Still available after current estimates" : "Amount above your overall budget")
         : "Set a total budget to compare.";
 
-      const categoryRows = CATEGORIES
+      const categoryRows = state.categories
         .map(category=>{
           const tasks = state.tasks.filter(task=>task.category === category);
           const estimated = tasks.reduce((sum,task)=>sum + Number(task.budget || 0),0);
@@ -1008,7 +1092,7 @@
       $("#taskForm").reset();
       $("#taskId").value = task?.id || "";
       $("#taskModalTitle").textContent = task ? "Edit checklist item" : "Add checklist item";
-      populateCategoryOptions(task?.category || "Venue");
+      populateCategoryOptions(task?.category || state.categories[0]);
       $("#taskTitleInput").value = task?.title || "";
       $("#taskStatusInput").value = task?.status || "To do";
       $("#taskDueInput").value = task?.due || "";
@@ -1031,12 +1115,86 @@
       openDialog("guestModal");
       setTimeout(()=>$("#guestNameInput").focus(),50);
     }
+    function categoryEditorRow(value="",original=""){
+      return `<div class="category-editor-row" data-original="${escapeHTML(original)}">
+        <input class="category-editor-input" maxlength="60" value="${escapeHTML(value)}" placeholder="Category name">
+        <button type="button" class="category-remove" data-action="remove-category" aria-label="Remove category">×</button>
+      </div>`;
+    }
+    function renderCategoryEditor(){
+      $("#categoryEditorList").innerHTML = state.categories.map(category=>categoryEditorRow(category,category)).join("");
+    }
     function openSettingsModal(){
+      $("#plannerTitleInput").value = state.plannerTitle || DEFAULT_PLANNER_TITLE;
+      $("#plannerSubtitleInput").value = state.plannerSubtitle || DEFAULT_PLANNER_SUBTITLE;
       $("#coupleNamesInput").value = state.coupleNames || "";
       $("#weddingDateInput").value = state.weddingDate || "";
       $("#overallBudgetInput").value = state.overallBudget || "";
+      renderCategoryEditor();
       openDialog("settingsModal");
-      setTimeout(()=>$("#coupleNamesInput").focus(),50);
+      setTimeout(()=>$("#plannerTitleInput").focus(),50);
+    }
+    function categoryEditorValues(){
+      return $$("#categoryEditorList .category-editor-row").map(row=>({
+        original:row.dataset.original || "",
+        value:row.querySelector("input").value.trim()
+      }));
+    }
+    function saveEditedCategories(){
+      const rows = categoryEditorValues();
+      const cleaned = normalizeCategories(rows.map(row=>row.value));
+      const fallback = cleaned.includes("Other") ? "Other" : cleaned[0];
+      const renamed = {};
+      rows.forEach(row=>{ if(row.original && row.value) renamed[row.original] = row.value; });
+      state.tasks = state.tasks.map(task=>({
+        ...task,
+        category: cleaned.includes(renamed[task.category])
+          ? renamed[task.category]
+          : (cleaned.includes(task.category) ? task.category : fallback)
+      }));
+      state.categories = cleaned;
+    }
+    function downloadPlannerFile(filename,text,type="application/json"){
+      const blob = new Blob([text],{type});
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      setTimeout(()=>URL.revokeObjectURL(link.href),1000);
+    }
+    function exportPlannerData(){
+      const fileTitle = (state.plannerTitle || "18th-birthday-planner").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+      downloadPlannerFile(`${fileTitle || "planner"}-backup.json`,JSON.stringify(state,null,2));
+      toast("Backup exported");
+    }
+    function importPlannerData(event){
+      const file = event.target.files?.[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try{
+          const imported = JSON.parse(reader.result);
+          if(!imported || typeof imported !== "object") throw new Error("Invalid file");
+          state = normalizeState(imported);
+          saveState();
+          closeDialog("settingsModal");
+          renderAll();
+          toast("Backup imported");
+        }catch(error){
+          alert("Invalid backup file. Please select a planner backup JSON file.");
+        }finally{
+          event.target.value = "";
+        }
+      };
+      reader.readAsText(file);
+    }
+    function resetPlannerData(){
+      if(!confirm("Start fresh? This will remove all tasks, guests, budget, and customization saved in this browser.")) return;
+      state = cloneDefaults();
+      saveState();
+      closeDialog("settingsModal");
+      renderAll();
+      toast("Fresh planner ready");
     }
     function handleTaskSubmit(event){
       event.preventDefault();
@@ -1088,6 +1246,24 @@
     $$("[data-go]").forEach(button=>button.addEventListener("click",()=>setView(button.dataset.go)));
     $("#openSettings").addEventListener("click",openSettingsModal);
     $("#openBudgetSettings").addEventListener("click",openSettingsModal);
+    $("#addCategoryRow").addEventListener("click",()=>{
+      $("#categoryEditorList").insertAdjacentHTML("beforeend",categoryEditorRow());
+      $("#categoryEditorList .category-editor-row:last-child input").focus();
+    });
+    $("#categoryEditorList").addEventListener("click",event=>{
+      if(event.target.closest('[data-action="remove-category"]')){
+        const row = event.target.closest(".category-editor-row");
+        if($$("#categoryEditorList .category-editor-row").length === 1){
+          row.querySelector("input").value = "Other";
+        }else{
+          row.remove();
+        }
+      }
+    });
+    $("#exportPlannerData").addEventListener("click",exportPlannerData);
+    $("#importPlannerData").addEventListener("click",()=>$("#importPlannerFile").click());
+    $("#importPlannerFile").addEventListener("change",importPlannerData);
+    $("#resetPlannerData").addEventListener("click",resetPlannerData);
     $("#quickAddTask").addEventListener("click",openTaskModal);
     $("#addTaskBtn").addEventListener("click",openTaskModal);
     $("#addGuestBtn").addEventListener("click",openGuestModal);
@@ -1095,10 +1271,13 @@
     $("#guestForm").addEventListener("submit",handleGuestSubmit);
     $("#settingsForm").addEventListener("submit",event=>{
       event.preventDefault();
+      state.plannerTitle = $("#plannerTitleInput").value.trim() || DEFAULT_PLANNER_TITLE;
+      state.plannerSubtitle = $("#plannerSubtitleInput").value.trim() || DEFAULT_PLANNER_SUBTITLE;
       state.coupleNames = $("#coupleNamesInput").value.trim();
       state.weddingDate = $("#weddingDateInput").value;
       state.overallBudget = Math.max(0, Number($("#overallBudgetInput").value || 0));
-      saveState(); closeDialog("settingsModal"); renderAll(); toast("Celebrant details saved");
+      saveEditedCategories();
+      saveState(); closeDialog("settingsModal"); renderAll(); toast("Planner customization saved");
     });
     $$(".filter-select").forEach(select=>select.addEventListener("change",()=>{
       if(select.id.startsWith("task")) renderTasks();
