@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#B7CEDE" />
+  <title>18th Birthday Planner</title>
+  <style>
+    :root{
+      --canvas:#F7FCFC;
+      --blue:#38CBC6;
+      --pale-blue:#BCE4E6;
+      --blush:#EAF7F7;
+      --rose:#DDAD85;
+      --ink:#49616C;
+      --muted:#74858D;
+      --line:#DDEBEC;
+      --card:#FFFFFF;
+      --soft:#F2F9F9;
+      --shadow:0 10px 28px rgba(84,108,122,.10);
+      --radius:22px;
+      --radius-sm:14px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      background:linear-gradient(140deg,#F8FEFE 0%,#F4FBFB 44%,#EDF8F8 100%);
+      color:var(--ink);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      min-height:100vh;
+    }
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+      outline:3px solid rgba(183,206,222,.72);
+      outline-offset:2px;
+    }
+    .app-shell{max-width:1500px;margin:0 auto;padding:22px}
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+      background:rgba(255,255,255,.76);border:1px solid rgba(228,234,236,.85);
+      box-shadow:var(--shadow);padding:18px 20px;border-radius:24px;backdrop-filter:blur(14px);
+      position:sticky;top:14px;z-index:20;
+    }
+    .brand{display:flex;align-items:center;gap:14px;min-width:0}
+    .brand-icon{
+      width:47px;height:47px;display:grid;place-items:center;flex:0 0 auto;
+      background:linear-gradient(145deg,#22C4C2,#89DEDC);border-radius:16px;
+      font-size:24px;box-shadow:0 8px 16px rgba(31,167,165,.22);
+    }
+    .brand h1{font-size:1.05rem;margin:0;font-weight:780;letter-spacing:-.03em}
+    .brand p{margin:4px 0 0;color:var(--muted);font-size:.83rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .btn{
+      border:0;border-radius:13px;padding:10px 13px;font-weight:720;font-size:.88rem;
+      transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:var(--ink);color:#fff;box-shadow:0 8px 15px rgba(64,81,94,.16)}
+    .btn-primary:hover{box-shadow:0 12px 22px rgba(64,81,94,.20)}
+    .btn-soft{background:var(--pale-blue);color:var(--ink)}
+    .btn-outline{background:#fff;color:var(--ink);border:1px solid var(--line)}
+    .btn-danger{background:#FFF0E8;color:#B0694F}
+    .layout{display:grid;grid-template-columns:224px minmax(0,1fr);gap:22px;margin-top:22px}
+    .sidebar{
+      height:fit-content;background:rgba(255,255,255,.72);border:1px solid rgba(228,234,236,.88);
+      border-radius:22px;padding:12px;box-shadow:0 8px 24px rgba(84,108,122,.07);position:sticky;top:110px;
+    }
+    .nav-button{
+      width:100%;border:0;background:transparent;border-radius:14px;color:var(--muted);font-weight:720;
+      padding:12px 13px;display:flex;align-items:center;gap:11px;text-align:left;margin:3px 0;transition:.18s;
+    }
+    .nav-button:hover{background:var(--soft);color:var(--ink)}
+    .nav-button.active{background:var(--blush);color:var(--ink)}
+    .nav-icon{font-size:1.04rem;width:21px;text-align:center}
+    .side-note{
+      padding:14px;margin:13px 0 2px;border-radius:15px;background:linear-gradient(135deg,var(--pale-blue),#EDF5F7);
+      color:var(--ink);font-size:.79rem;line-height:1.45;
+    }
+    .side-note strong{display:block;margin-bottom:4px;font-size:.82rem}
+    .view{display:none;animation:fade .25s ease}
+    .view.active{display:block}
+    @keyframes fade{from{opacity:.3;transform:translateY(5px)}to{opacity:1;transform:none}}
+    .page-title{display:flex;justify-content:space-between;align-items:end;gap:16px;margin:4px 0 18px}
+    .page-title h2{margin:0;font-size:1.48rem;letter-spacing:-.045em}
+    .page-title p{margin:5px 0 0;color:var(--muted);font-size:.9rem}
+    .hero-grid{display:grid;grid-template-columns:1.14fr .86fr;gap:18px}
+    .card{
+      background:var(--card);border:1px solid rgba(228,234,236,.95);border-radius:var(--radius);box-shadow:var(--shadow);
+    }
+    .countdown-card{
+      min-height:255px;padding:25px;position:relative;overflow:hidden;
+      background:linear-gradient(135deg,#FFFFFF 0%,#ECFAFA 100%);
+    }
+    .countdown-card::after{
+      content:"";position:absolute;width:230px;height:230px;border-radius:50%;right:-80px;bottom:-100px;
+      background:radial-gradient(circle at 40% 40%,rgba(76,207,202,.42),rgba(188,228,230,.12) 68%,transparent 69%);
+    }
+    .eyebrow{font-size:.75rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#72818A}
+    .countdown-title{margin:8px 0 0;font-size:1.35rem;letter-spacing:-.035em;position:relative;z-index:1}
+    .countdown-date{color:var(--muted);margin:8px 0 18px;font-size:.9rem;position:relative;z-index:1}
+    .countdown-number{font-size:4.6rem;font-weight:820;letter-spacing:-.09em;line-height:.9;position:relative;z-index:1}
+    .countdown-label{margin-top:7px;font-size:.87rem;color:var(--muted);font-weight:680;position:relative;z-index:1}
+    .mini-counts{display:flex;gap:10px;margin-top:21px;position:relative;z-index:1;flex-wrap:wrap}
+    .mini-count{padding:9px 11px;border-radius:12px;background:rgba(255,255,255,.76);border:1px solid rgba(228,234,236,.9);font-size:.78rem;color:var(--muted)}
+    .mini-count strong{color:var(--ink)}
+    .progress-card{padding:25px;display:flex;flex-direction:column;justify-content:space-between;min-height:255px}
+    .progress-top{display:flex;justify-content:space-between;gap:14px;align-items:start}
+    .progress-top h3{margin:7px 0 0;font-size:1.2rem;letter-spacing:-.03em}
+    .progress-ring{
+      width:72px;height:72px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;
+      background:conic-gradient(var(--blue) var(--progress,0%),#EDF1F2 0);
+      position:relative;
+    }
+    .progress-ring::before{content:"";position:absolute;inset:8px;background:#fff;border-radius:50%}
+    .progress-ring span{position:relative;font-size:.85rem;font-weight:830}
+    .bar-track{height:11px;background:#EEF2F3;border-radius:99px;overflow:hidden;margin-top:23px}
+    .bar-fill{height:100%;background:linear-gradient(90deg,#20C2C0,#78D9D8);border-radius:inherit;width:0%;transition:width .35s ease}
+    .progress-copy{color:var(--muted);font-size:.86rem;line-height:1.5;margin:13px 0 0}
+    .budget-minis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+    .budget-mini{background:var(--soft);padding:12px;border-radius:13px}
+    .budget-mini span{display:block;color:var(--muted);font-size:.72rem;margin-bottom:4px}
+    .budget-mini strong{font-size:.98rem}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:18px 0}
+    .stat-card{padding:17px;border-radius:19px;background:#fff;border:1px solid var(--line);box-shadow:0 6px 20px rgba(84,108,122,.06)}
+    .stat-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:12px;background:var(--blush);font-size:1rem}
+    .stat-card:nth-child(2) .stat-icon{background:var(--pale-blue)}
+    .stat-card:nth-child(3) .stat-icon{background:#F2EDEE}
+    .stat-card:nth-child(4) .stat-icon{background:#E9F0E8}
+    .stat-card strong{display:block;font-size:1.45rem;letter-spacing:-.05em;margin-top:12px}
+    .stat-card span{font-size:.79rem;color:var(--muted)}
+    .dashboard-grid{display:grid;grid-template-columns:1.06fr .94fr;gap:18px}
+    .section-card{padding:20px}
+    .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+    .section-head h3{margin:0;font-size:1.02rem;letter-spacing:-.025em}
+    .text-btn{border:0;background:transparent;color:#3B9C9A;font-size:.82rem;font-weight:760;padding:5px}
+    .text-btn:hover{color:var(--ink)}
+    .category-list{display:grid;gap:11px}
+    .category-row{
+      display:grid;grid-template-columns:minmax(100px,1fr) 1.7fr 36px;align-items:center;gap:11px;font-size:.82rem;
+    }
+    .category-row strong{font-size:.84rem}
+    .category-row span{color:var(--muted);text-align:right;font-size:.76rem}
+    .small-track{height:8px;background:#EDF1F2;border-radius:99px;overflow:hidden}
+    .small-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--rose),var(--blush))}
+    .deadline-list{display:grid;gap:10px}
+    .deadline{
+      display:flex;align-items:center;gap:11px;padding:11px;border:1px solid var(--line);border-radius:14px;background:#fff;
+    }
+    .deadline-dot{width:9px;height:9px;border-radius:50%;background:var(--rose);flex:0 0 auto}
+    .deadline h4{font-size:.84rem;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .deadline p{font-size:.75rem;color:var(--muted);margin:3px 0 0}
+    .deadline .status-pill{margin-left:auto}
+    .empty-state{
+      color:var(--muted);border:1px dashed #D8E1E4;border-radius:15px;padding:18px;text-align:center;font-size:.86rem;line-height:1.55;
+      background:#FAFCFC;
+    }
+    .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:15px}
+    .filter-select{
+      height:42px;border:1px solid var(--line);border-radius:12px;color:var(--ink);background:#fff;padding:0 12px;font-size:.86rem;min-width:145px;
+    }
+    .toolbar .btn-primary{margin-left:auto}
+    .task-list{display:grid;gap:12px}
+    .task-card{padding:17px;display:grid;grid-template-columns:auto minmax(190px,1.25fr) minmax(130px,.7fr) minmax(140px,.72fr) minmax(140px,.72fr) minmax(135px,.7fr) auto;align-items:center;gap:14px}
+    .complete-check{
+      width:23px;height:23px;border-radius:8px;border:2px solid #C8D6DD;background:#fff;display:grid;place-items:center;padding:0;flex:0 0 auto;
+    }
+    .complete-check.done{background:var(--blue);border-color:var(--blue);color:#fff}
+    .task-primary{min-width:0}
+    .task-title{display:block;font-size:.93rem;font-weight:780;line-height:1.22;overflow-wrap:anywhere}
+    .task-notes{color:var(--muted);font-size:.74rem;margin:5px 0 0;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .category-badge{display:inline-flex;align-items:center;justify-content:center;max-width:100%;padding:6px 9px;border-radius:999px;background:var(--blush);font-size:.72rem;font-weight:760;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .meta-label{display:block;color:var(--muted);font-size:.69rem;letter-spacing:.02em;text-transform:uppercase;font-weight:750;margin-bottom:5px}
+    .meta-value{font-size:.82rem;font-weight:690}
+    .task-select{border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);padding:8px 9px;font-size:.8rem;width:100%}
+    .amount{font-size:.84rem;font-weight:760;white-space:nowrap}
+    .amount small{font-size:.69rem;color:var(--muted);font-weight:650;display:block;margin-top:3px}
+    .icon-btn{
+      width:35px;height:35px;border:0;background:#F0FAFA;border-radius:10px;color:#4A9F9C;display:grid;place-items:center;font-size:1rem;transition:.17s;
+    }
+    .icon-btn:hover{background:var(--blush);color:var(--ink)}
+    .guest-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+    .guest-stat{padding:15px;background:#fff;border:1px solid var(--line);border-radius:17px}
+    .guest-stat strong{font-size:1.38rem;display:block;letter-spacing:-.05em}
+    .guest-stat span{color:var(--muted);font-size:.76rem}
+    .guest-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .guest-card{padding:17px;position:relative}
+    .guest-top{display:flex;align-items:start;justify-content:space-between;gap:10px}
+    .guest-name{margin:0;font-size:.95rem;letter-spacing:-.02em;overflow-wrap:anywhere}
+    .guest-side{font-size:.72rem;color:var(--muted);margin-top:4px}
+    .guest-info{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    .guest-chip{font-size:.72rem;border-radius:99px;background:var(--soft);padding:6px 8px;color:#596C77}
+    .guest-card p{color:var(--muted);font-size:.76rem;margin:12px 0 0;line-height:1.45}
+    .status-pill{display:inline-flex;align-items:center;justify-content:center;padding:6px 8px;border-radius:999px;font-size:.69rem;font-weight:780;white-space:nowrap}
+    .status-todo{background:#F0F3F4;color:#71808A}
+    .status-ongoing{background:#FFF0E8;color:#B56C4B}
+    .status-done,.status-confirmed{background:#DDF5F1;color:#317D79}
+    .status-pending{background:#FFF4D9;color:#967433}
+    .status-declined{background:#FBE8E6;color:#AF6D67}
+    dialog{
+      border:0;padding:0;border-radius:22px;box-shadow:0 25px 70px rgba(45,60,68,.25);max-width:min(640px,calc(100vw - 28px));width:100%;
+    }
+    dialog::backdrop{background:rgba(55,70,77,.35);backdrop-filter:blur(3px)}
+    .modal{padding:22px;background:#fff}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+    .modal-head h3{margin:0;font-size:1.14rem;letter-spacing:-.03em}
+    .close-modal{border:0;background:var(--soft);border-radius:10px;width:34px;height:34px;color:var(--ink);font-size:1.2rem;line-height:1}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+    .field{min-width:0}
+    .field.full{grid-column:1/-1}
+    .field label{display:block;font-size:.77rem;font-weight:760;color:#61727C;margin:0 0 6px}
+    .field input,.field select,.field textarea{
+      width:100%;border:1px solid var(--line);border-radius:11px;padding:10px 11px;color:var(--ink);background:#fff;font-size:.88rem;
+    }
+    .field textarea{min-height:88px;resize:vertical}
+    .modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:19px}
+    .modal-note{font-size:.76rem;color:var(--muted);margin:0 0 14px;line-height:1.45}
+    .budget-top-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+    .budget-hero,.budget-health-card{padding:24px;min-height:220px;display:flex;flex-direction:column;justify-content:space-between}
+    .budget-hero{background:linear-gradient(135deg,#FFFFFF 0%,#F0F7F9 100%)}
+    .budget-health-card{background:linear-gradient(135deg,#FFFFFF 0%,#FCF6F6 100%)}
+    .budget-amount{font-size:2.25rem;line-height:1;letter-spacing:-.075em;margin:8px 0 0;font-weight:830}
+    .budget-copy{color:var(--muted);font-size:.85rem;line-height:1.5;margin:9px 0 0;max-width:440px}
+    .budget-health-title{font-size:1.22rem;letter-spacing:-.035em;margin:8px 0 0}
+    .budget-health-amount{font-size:1.8rem;letter-spacing:-.06em;font-weight:830;margin:17px 0 0}
+    .budget-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+    .budget-stat{padding:17px;border-radius:19px;background:#fff;border:1px solid var(--line);box-shadow:0 6px 20px rgba(84,108,122,.06)}
+    .budget-stat span{display:block;color:var(--muted);font-size:.74rem;margin-bottom:6px}
+    .budget-stat strong{font-size:1.34rem;letter-spacing:-.055em;display:block}
+    .budget-stat small{display:block;color:var(--muted);font-size:.72rem;margin-top:5px;line-height:1.35}
+    .category-budget-list{display:grid;gap:10px}
+    .budget-category-row{padding:13px 14px;border:1px solid var(--line);border-radius:15px;background:#fff}
+    .budget-category-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .budget-category-top strong{font-size:.88rem}
+    .budget-category-top span{font-size:.8rem;font-weight:780;white-space:nowrap}
+    .budget-category-meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:.74rem;margin:8px 0 9px}
+    .budget-category-meta b{color:var(--ink)}
+    .top-cost-list{display:grid;gap:10px}
+    .top-cost-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+    .top-cost-item:last-child{border-bottom:0}
+    .top-cost-item h4{margin:0;font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .top-cost-item p{margin:4px 0 0;color:var(--muted);font-size:.74rem}
+    .top-cost-item strong{font-size:.88rem;white-space:nowrap}
+    .toast{
+      position:fixed;right:20px;bottom:20px;background:var(--ink);color:#fff;padding:12px 15px;border-radius:13px;
+      box-shadow:0 12px 35px rgba(64,81,94,.2);font-size:.84rem;font-weight:650;z-index:50;transform:translateY(90px);opacity:0;transition:.24s;
+    }
+    .toast.show{transform:none;opacity:1}
+    .muted{color:var(--muted)}
+    @media (max-width:1120px){
+      .task-card{grid-template-columns:auto 1.3fr .65fr .8fr .85fr auto}
+      .task-card .task-notes{display:none}
+      .task-card .category-badge{display:none}
+    }
+    @media (max-width:900px){
+      .layout{grid-template-columns:1fr}
+      .sidebar{position:static;display:flex;align-items:center;gap:6px;overflow:auto;padding:9px;scrollbar-width:none}
+      .sidebar::-webkit-scrollbar{display:none}
+      .nav-button{width:auto;white-space:nowrap;padding:10px 13px;margin:0}
+      .side-note{display:none}
+      .hero-grid,.dashboard-grid,.budget-top-grid{grid-template-columns:1fr}
+      .budget-stat-grid{grid-template-columns:repeat(2,1fr)}
+      .guest-list{grid-template-columns:1fr}
+    }
+    @media (max-width:700px){
+      .app-shell{padding:12px}
+      .topbar{padding:14px;top:7px;border-radius:19px}
+      .brand-icon{width:40px;height:40px;border-radius:13px;font-size:20px}
+      .brand h1{font-size:.95rem}
+      .brand p{font-size:.74rem;max-width:160px}
+      .top-actions .btn-soft{display:none}
+      .top-actions .btn{padding:9px 10px;font-size:.79rem}
+      .layout{gap:13px;margin-top:13px}
+      .page-title{align-items:start;margin:4px 1px 13px}
+      .page-title h2{font-size:1.25rem}
+      .page-title p{font-size:.81rem}
+      .countdown-card,.progress-card,.section-card{padding:18px;border-radius:19px}
+      .countdown-card{min-height:225px}
+      .countdown-number{font-size:3.8rem}
+      .stats-grid,.guest-summary,.budget-stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+      .budget-hero,.budget-health-card{padding:18px;min-height:195px}
+      .budget-amount{font-size:1.85rem}
+      .budget-stat{padding:13px;border-radius:16px}
+      .budget-stat strong{font-size:1.12rem}
+      .budget-category-top{align-items:flex-start;flex-direction:column;gap:3px}
+      .stat-card{padding:13px;border-radius:16px}
+      .stat-card strong{font-size:1.25rem;margin-top:8px}
+      .category-row{grid-template-columns:minmax(86px,1fr) 1.3fr 32px;gap:8px}
+      .toolbar{gap:8px}
+      .filter-select{min-width:0;flex:1;height:40px}
+      .toolbar .btn-primary{margin-left:0;width:100%}
+      .task-card{
+        grid-template-columns:auto 1fr auto;gap:10px;padding:15px;border-radius:17px;align-items:start;
+      }
+      .task-card .category-badge{display:inline-flex;margin-top:8px}
+      .task-card .task-notes{display:-webkit-box}
+      .task-card .meta,.task-card .amount{grid-column:2;display:flex;gap:7px;align-items:center}
+      .task-card .meta-label{margin:0;font-size:.65rem}
+      .task-card .task-select{grid-column:2;max-width:180px}
+      .task-card .delete-task{grid-column:3;grid-row:1;align-self:start}
+      .guest-card{border-radius:17px}
+      .form-grid{grid-template-columns:1fr}
+      .field.full{grid-column:auto}
+      dialog{max-width:calc(100vw - 20px);border-radius:19px}
+      .modal{padding:18px}
+      .modal-foot{flex-direction:column-reverse}
+      .modal-foot .btn{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">✦</div>
+        <div>
+          <h1 id="brandTitle">18th Birthday Planner</h1>
+          <p id="brandSubtitle">Plan every detail for a milestone celebration.</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-soft" id="openSettings">⚙ Celebrant details</button>
+        <button class="btn btn-primary" id="quickAddTask">＋ Add task</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar" aria-label="Wedding planner navigation">
+        <button class="nav-button active" data-view="overview"><span class="nav-icon">⌂</span>Overview</button>
+        <button class="nav-button" data-view="checklist"><span class="nav-icon">✓</span>Checklist</button>
+        <button class="nav-button" data-view="budget"><span class="nav-icon">₱</span>Budget</button>
+        <button class="nav-button" data-view="guests"><span class="nav-icon">♧</span>Guest & RSVP</button>
+        <div class="side-note">
+          <strong>Saved automatically</strong>
+          Your planner stays in this browser, even after you close the page.
+        </div>
+      </aside>
+
+      <main>
+        <section class="view active" id="overviewView">
+          <div class="page-title">
+            <div>
+              <h2>Birthday celebration at a glance</h2>
+              <p>See your progress, next deadlines, guest replies, and budget in one place.</p>
+            </div>
+          </div>
+
+          <div class="hero-grid">
+            <article class="card countdown-card">
+              <div class="eyebrow">18th birthday countdown</div>
+              <h3 class="countdown-title" id="countdownHeadline">Set the celebration date</h3>
+              <p class="countdown-date" id="countdownDate">Choose the party date to start your countdown.</p>
+              <p>by Edss Create </p>
+              <div class="countdown-number" id="countdownNumber">—</div>
+              <div class="countdown-label" id="countdownLabel">days to go</div>
+              <div class="mini-counts" id="countdownMini"></div>
+            </article>
+
+            <article class="card progress-card">
+              <div>
+                <div class="progress-top">
+                  <div>
+                    <div class="eyebrow">Planning progress</div>
+                    <h3 id="progressTitle">Let’s make it unforgettable</h3>
+                  </div>
+                  <div class="progress-ring" id="progressRing"><span id="progressRingText">0%</span></div>
+                </div>
+                <div class="bar-track"><div class="bar-fill" id="overallProgressBar"></div></div>
+                <p class="progress-copy" id="progressCopy">Add your first task to begin tracking your birthday celebration plans.</p>
+              </div>
+              <div class="budget-minis">
+                <div class="budget-mini"><span>Estimated total cost</span><strong id="overviewBudget">₱0</strong></div>
+                <div class="budget-mini"><span>Paid so far</span><strong id="overviewPaid">₱0</strong></div>
+              </div>
+            </article>
+          </div>
+
+          <div class="stats-grid">
+            <article class="stat-card"><div class="stat-icon">✓</div><strong id="statDone">0</strong><span>Tasks completed</span></article>
+            <article class="stat-card"><div class="stat-icon">◷</div><strong id="statOngoing">0</strong><span>Tasks ongoing</span></article>
+            <article class="stat-card"><div class="stat-icon">♡</div><strong id="statGuests">0</strong><span>Guests confirmed</span></article>
+            <article class="stat-card"><div class="stat-icon">₱</div><strong id="statBalance">₱0</strong><span>Amount left to pay</span></article>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="card section-card">
+              <div class="section-head">
+                <h3>Category progress</h3>
+                <button class="text-btn" data-go="checklist">Open checklist →</button>
+              </div>
+              <div class="category-list" id="categoryProgress"></div>
+            </article>
+
+            <article class="card section-card">
+              <div class="section-head">
+                <h3>Next deadlines</h3>
+                <button class="text-btn" data-go="checklist">View all →</button>
+              </div>
+              <div class="deadline-list" id="deadlineList"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" id="checklistView">
+          <div class="page-title">
+            <div>
+              <h2>18th birthday checklist</h2>
+              <p>Track venue, suppliers, traditions, program details, invitations, and every little detail.</p>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <select id="taskCategoryFilter" class="filter-select" aria-label="Filter checklist by category">
+              <option value="all">All categories</option>
+            </select>
+            <select id="taskStatusFilter" class="filter-select" aria-label="Filter checklist by status">
+              <option value="all">All statuses</option>
+              <option value="To do">To do</option>
+              <option value="Ongoing">Ongoing</option>
+              <option value="Done">Done</option>
+            </select>
+            <button class="btn btn-primary" id="addTaskBtn">＋ Add checklist item</button>
+          </div>
+          <div class="task-list" id="taskList"></div>
+        </section>
+
+
+        <section class="view" id="budgetView">
+          <div class="page-title">
+            <div>
+              <h2>18th birthday budget</h2>
+              <p>See your estimated cost, payments, remaining balance, and spending by category.</p>
+            </div>
+          </div>
+
+          <div class="budget-top-grid">
+            <article class="card budget-hero">
+              <div>
+                <div class="eyebrow">Overall celebration budget</div>
+                <div class="budget-amount" id="budgetTarget">No set budget</div>
+                <p class="budget-copy" id="budgetTargetCopy">Set your maximum celebration budget in Celebrant details, then compare it with your checklist estimates.</p>
+              </div>
+              <div><button class="btn btn-soft" id="openBudgetSettings">⚙ Set total budget</button></div>
+            </article>
+
+            <article class="card budget-health-card">
+              <div>
+                <div class="eyebrow">Budget health</div>
+                <h3 class="budget-health-title" id="budgetHealthTitle">Start adding estimates</h3>
+                <div class="budget-health-amount" id="budgetHealthAmount">—</div>
+                <p class="budget-copy" id="budgetHealthCopy">Add a budget amount on each checklist item to see if your plan stays on track.</p>
+              </div>
+              <div class="bar-track"><div class="bar-fill" id="budgetTargetBar"></div></div>
+            </article>
+          </div>
+
+          <div class="budget-stat-grid">
+            <article class="budget-stat"><span>Estimated total cost</span><strong id="budgetEstimated">₱0</strong><small>Sum of all checklist estimates</small></article>
+            <article class="budget-stat"><span>Paid so far</span><strong id="budgetPaid">₱0</strong><small>Recorded payments and deposits</small></article>
+            <article class="budget-stat"><span>Amount left to pay</span><strong id="budgetRemaining">₱0</strong><small>Estimated cost minus paid amount</small></article>
+            <article class="budget-stat"><span id="budgetDifferenceLabel">Difference from target</span><strong id="budgetDifference">—</strong><small id="budgetDifferenceCopy">Set a total budget to compare.</small></article>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="card section-card">
+              <div class="section-head">
+                <h3>Budget breakdown by category</h3>
+                <button class="text-btn" data-go="checklist">Edit task budgets →</button>
+              </div>
+              <div class="category-budget-list" id="categoryBudgetList"></div>
+            </article>
+
+            <article class="card section-card">
+              <div class="section-head">
+                <h3>Highest estimated costs</h3>
+                <button class="text-btn" data-go="checklist">View checklist →</button>
+              </div>
+              <div class="top-cost-list" id="topCostList"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" id="guestsView">
+          <div class="page-title">
+            <div>
+              <h2>Guest list & RSVP tracker</h2>
+              <p>Keep guest replies, plus-ones, contact details, and notes organized.</p>
+            </div>
+          </div>
+
+          <div class="guest-summary">
+            <article class="guest-stat"><strong id="guestTotal">0</strong><span>Total names</span></article>
+            <article class="guest-stat"><strong id="guestConfirmed">0</strong><span>Confirmed</span></article>
+            <article class="guest-stat"><strong id="guestPending">0</strong><span>Pending reply</span></article>
+            <article class="guest-stat"><strong id="guestPax">0</strong><span>Expected pax</span></article>
+          </div>
+
+          <div class="toolbar">
+            <select id="guestStatusFilter" class="filter-select" aria-label="Filter guests by RSVP">
+              <option value="all">All RSVP statuses</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Pending">Pending</option>
+              <option value="Declined">Declined</option>
+            </select>
+            <select id="guestSideFilter" class="filter-select" aria-label="Filter guests by side">
+              <option value="all">All sides</option>
+              <option value="Family">Family</option>
+              <option value="Friends">Friends</option>
+              <option value="School / Work">School / Work</option>
+              <option value="Other">Other</option>
+            </select>
+            <button class="btn btn-primary" id="addGuestBtn">＋ Add guest</button>
+          </div>
+          <div class="guest-list" id="guestList"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="taskModal">
+    <form class="modal" id="taskForm">
+      <div class="modal-head">
+        <h3 id="taskModalTitle">Add checklist item</h3>
+        <button class="close-modal" type="button" data-close="taskModal" aria-label="Close">×</button>
+      </div>
+      <div class="form-grid">
+        <input type="hidden" id="taskId">
+        <div class="field full">
+          <label for="taskTitleInput">Task title</label>
+          <input id="taskTitleInput" required maxlength="100" placeholder="e.g., Confirm photographer package">
+        </div>
+        <div class="field">
+          <label for="taskCategoryInput">Category</label>
+          <select id="taskCategoryInput" required></select>
+        </div>
+        <div class="field">
+          <label for="taskStatusInput">Status</label>
+          <select id="taskStatusInput" required>
+            <option>To do</option>
+            <option>Ongoing</option>
+            <option>Done</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="taskDueInput">Due date</label>
+          <input id="taskDueInput" type="date">
+        </div>
+        <div class="field">
+          <label for="taskBudgetInput">Budget (₱)</label>
+          <input id="taskBudgetInput" type="number" min="0" step="0.01" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="taskPaidInput">Paid amount (₱)</label>
+          <input id="taskPaidInput" type="number" min="0" step="0.01" placeholder="0">
+        </div>
+        <div class="field full">
+          <label for="taskNotesInput">Notes</label>
+          <textarea id="taskNotesInput" maxlength="400" placeholder="Supplier name, contact person, payment deadline, or any important detail…"></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-outline" data-close="taskModal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save task</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="guestModal">
+    <form class="modal" id="guestForm">
+      <div class="modal-head">
+        <h3 id="guestModalTitle">Add guest</h3>
+        <button class="close-modal" type="button" data-close="guestModal" aria-label="Close">×</button>
+      </div>
+      <div class="form-grid">
+        <input type="hidden" id="guestId">
+        <div class="field full">
+          <label for="guestNameInput">Guest name</label>
+          <input id="guestNameInput" required maxlength="100" placeholder="e.g., Maria Santos">
+        </div>
+        <div class="field">
+          <label for="guestSideInput">Guest group</label>
+          <select id="guestSideInput">
+            <option>Family</option>
+            <option>Friends</option>
+            <option>School / Work</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="guestRsvpInput">RSVP status</label>
+          <select id="guestRsvpInput">
+            <option>Pending</option>
+            <option>Confirmed</option>
+            <option>Declined</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="guestPaxInput">Pax / plus-ones</label>
+          <input id="guestPaxInput" type="number" min="1" value="1">
+        </div>
+        <div class="field">
+          <label for="guestContactInput">Contact number</label>
+          <input id="guestContactInput" maxlength="50" placeholder="Optional">
+        </div>
+        <div class="field full">
+          <label for="guestNotesInput">Notes / meal preference</label>
+          <textarea id="guestNotesInput" maxlength="300" placeholder="Optional: special meal, relationship, message sent date…"></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-outline" data-close="guestModal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save guest</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="settingsModal">
+    <form class="modal" id="settingsForm">
+      <div class="modal-head">
+        <h3>Celebrant details</h3>
+        <button class="close-modal" type="button" data-close="settingsModal" aria-label="Close">×</button>
+      </div>
+      <p class="modal-note">Add the celebrant’s name and celebration date so the planner feels more personal.</p>
+      <div class="form-grid">
+        <div class="field full">
+          <label for="coupleNamesInput">Celebrant name</label>
+          <input id="coupleNamesInput" maxlength="80" placeholder="e.g., Allanis">
+        </div>
+        <div class="field full">
+          <label for="weddingDateInput">18th birthday celebration date</label>
+          <input id="weddingDateInput" type="date">
+        </div>
+        <div class="field full">
+          <label for="overallBudgetInput">Overall celebration budget (₱)</label>
+          <input id="overallBudgetInput" type="number" min="0" step="0.01" placeholder="e.g., 300000">
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-outline" data-close="settingsModal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save details</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY = "pastelWeddingPlanner_v1";
+    const CATEGORIES = ["Theme & Venue", "Suppliers", "Attire & Glam", "Invitations", "Guest List", "18 Traditions", "Program", "Food & Catering", "Decor & Styling", "Other"];
+
+    const initialTasks = [
+      {id:"t1",title:"Set the celebration date, time, and venue",category:"Theme & Venue",status:"To do",due:"",budget:0,paid:0,notes:""},
+      {id:"t2",title:"Choose the 18th birthday theme and color palette",category:"Theme & Venue",status:"To do",due:"",budget:0,paid:0,notes:""},
+      {id:"t3",title:"Book photographer and videographer",category:"Suppliers",status:"To do",due:"",budget:0,paid:0,notes:""},
+      {id:"t4",title:"Book host, DJ, or sound system",category:"Suppliers",status:"To do",due:"",budget:0,paid:0,notes:""},
+      {id:"t5",title:"Finalize gown, shoes, accessories, and makeup look",category:"Attire & Glam",status:"To do",due:"",budget:0,paid:0,notes:""},
+      {id:"t6",title:"Prepare guest list and send invitations",category:"Invitations",status:"To do",due:"",budget:0,paid:0,notes:""},
+      {id:"t7",title:"Track RSVPs and final guest count",category:"Guest List",status:"To do",due:"",budget:0,paid:0,notes:""},
+      {id:"t8",title:"Confirm 18 Roses, 18 Candles, and 18 Treasures participants",category:"18 Traditions",status:"To do",due:"",budget:0,paid:0,notes:""},
+      {id:"t9",title:"Prepare program flow, entrance, and 18 traditions sequence",category:"Program",status:"To do",due:"",budget:0,paid:0,notes:""},
+      {id:"t10",title:"Finalize catering, cake, dessert table, and drinks",category:"Food & Catering",status:"To do",due:"",budget:0,paid:0,notes:""},
+      {id:"t11",title:"Confirm backdrop, stage styling, balloons, flowers, and table setup",category:"Decor & Styling",status:"To do",due:"",budget:0,paid:0,notes:""}
+    ];
+
+    const fallbackState = {coupleNames:"",weddingDate:"",overallBudget:0,tasks:initialTasks,guests:[]};
+    let state = loadState();
+
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => [...document.querySelectorAll(selector)];
+    const money = (value) => new Intl.NumberFormat("en-PH",{style:"currency",currency:"PHP",minimumFractionDigits:0,maximumFractionDigits:0}).format(Number(value || 0));
+    const dateFormatter = new Intl.DateTimeFormat("en-PH",{month:"long",day:"numeric",year:"numeric"});
+    const shortDateFormatter = new Intl.DateTimeFormat("en-PH",{month:"short",day:"numeric",year:"numeric"});
+
+    function cloneDefaults(){ return JSON.parse(JSON.stringify(fallbackState)); }
+    function loadState(){
+      try{
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if(!saved || typeof saved !== "object") return cloneDefaults();
+        return {
+          coupleNames: saved.coupleNames || "",
+          weddingDate: saved.weddingDate || "",
+          overallBudget: Math.max(0, Number(saved.overallBudget || 0)),
+          tasks: Array.isArray(saved.tasks) ? saved.tasks : initialTasks,
+          guests: Array.isArray(saved.guests) ? saved.guests : []
+        };
+      }catch(error){ return cloneDefaults(); }
+    }
+    function saveState(){
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+    }
+    function uid(prefix){ return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
+    function escapeHTML(value=""){
+      return String(value).replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));
+    }
+    function parseDate(value){
+      if(!value) return null;
+      const date = new Date(value + "T00:00:00");
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+    function formatDate(value,short=false){
+      const date = parseDate(value);
+      return date ? (short ? shortDateFormatter : dateFormatter).format(date) : "No date";
+    }
+    function statusClass(status){
+      return {"To do":"todo","Ongoing":"ongoing","Done":"done","Confirmed":"confirmed","Pending":"pending","Declined":"declined"}[status] || "todo";
+    }
+    function toast(message){
+      const el = $("#toast");
+      el.textContent = message;
+      el.classList.add("show");
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(()=>el.classList.remove("show"),2200);
+    }
+    function setView(viewName){
+      $$(".view").forEach(view=>view.classList.toggle("active",view.id === `${viewName}View`));
+      $$(".nav-button").forEach(btn=>btn.classList.toggle("active",btn.dataset.view === viewName));
+      window.scrollTo({top:0,behavior:"smooth"});
+    }
+    function openDialog(id){
+      const dialog = document.getElementById(id);
+      if(typeof dialog.showModal === "function") dialog.showModal();
+      else dialog.setAttribute("open","");
+    }
+    function closeDialog(id){ document.getElementById(id).close(); }
+
+    function populateCategoryOptions(selected="Venue"){
+      $("#taskCategoryInput").innerHTML = CATEGORIES.map(category =>
+        `<option ${category === selected ? "selected" : ""}>${category}</option>`
+      ).join("");
+    }
+    function renderBrand(){
+      const title = state.coupleNames ? `${escapeHTML(state.coupleNames)}’s 18th Birthday Planner` : "18th Birthday Planner";
+      $("#brandTitle").innerHTML = title;
+      $("#brandSubtitle").textContent = state.weddingDate ? `18th birthday celebration date: ${formatDate(state.weddingDate)}` : "Plan every detail for a milestone celebration.";
+    }
+    function getMetrics(){
+      const total = state.tasks.length;
+      const done = state.tasks.filter(t=>t.status === "Done").length;
+      const ongoing = state.tasks.filter(t=>t.status === "Ongoing").length;
+      const budget = state.tasks.reduce((sum,t)=>sum + Number(t.budget || 0),0);
+      const paid = state.tasks.reduce((sum,t)=>sum + Number(t.paid || 0),0);
+      const balance = Math.max(0,budget-paid);
+      const overallBudget = Math.max(0,Number(state.overallBudget || 0));
+      const differenceFromTarget = overallBudget ? overallBudget - budget : null;
+      const confirmedGuests = state.guests.filter(g=>g.rsvp === "Confirmed");
+      const expectedPax = confirmedGuests.reduce((sum,g)=>sum + Math.max(1,Number(g.pax || 1)),0);
+      return {total,done,ongoing,budget,paid,balance,overallBudget,differenceFromTarget,confirmedGuests:confirmedGuests.length,expectedPax};
+    }
+    function renderCountdown(){
+      const date = parseDate(state.weddingDate);
+      if(!date){
+        $("#countdownHeadline").textContent = "Set the celebration date";
+        $("#countdownDate").textContent = "Choose the party date to start your countdown.";
+        $("#countdownNumber").textContent = "—";
+        $("#countdownLabel").textContent = "days to go";
+        $("#countdownMini").innerHTML = `<div class="mini-count">Your plan will be ready <strong>when you are</strong></div>`;
+        return;
+      }
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const diff = Math.ceil((date.getTime()-today.getTime())/86400000);
+      $("#countdownHeadline").textContent = state.coupleNames ? `${state.coupleNames}’s big day` : "The big celebration";
+      $("#countdownDate").textContent = formatDate(state.weddingDate);
+      if(diff > 0){
+        $("#countdownNumber").textContent = diff.toLocaleString();
+        $("#countdownLabel").textContent = diff === 1 ? "day to go" : "days to go";
+        $("#countdownMini").innerHTML = `
+          <div class="mini-count"><strong>${Math.floor(diff/7)}</strong> weeks</div>
+          <div class="mini-count"><strong>${Math.floor(diff/30.44)}</strong> months</div>`;
+      }else if(diff === 0){
+        $("#countdownNumber").textContent = "Today";
+        $("#countdownLabel").textContent = "is the birthday celebration";
+        $("#countdownMini").innerHTML = `<div class="mini-count">Wishing the celebrant a <strong>beautiful 18th</strong> ✦</div>`;
+      }else{
+        $("#countdownNumber").textContent = "♡";
+        $("#countdownLabel").textContent = "the celebration date has passed";
+        $("#countdownMini").innerHTML = `<div class="mini-count">A milestone worth <strong>remembering</strong></div>`;
+      }
+    }
+    function renderOverview(){
+      renderBrand();
+      renderCountdown();
+      const m = getMetrics();
+      const percentage = m.total ? Math.round((m.done / m.total) * 100) : 0;
+      $("#progressRing").style.setProperty("--progress",`${percentage}%`);
+      $("#progressRingText").textContent = `${percentage}%`;
+      $("#overallProgressBar").style.width = `${percentage}%`;
+      $("#progressTitle").textContent = m.total ? `${m.done} of ${m.total} tasks completed` : "Let’s make it unforgettable";
+      $("#progressCopy").textContent = m.total
+        ? (percentage === 100 ? "Everything on the checklist is done. Enjoy the celebration!" : "Keep going—each completed task brings you closer to the celebration.")
+        : "Add your first task to begin tracking your birthday celebration plans.";
+      $("#overviewBudget").textContent = money(m.budget);
+      $("#overviewPaid").textContent = money(m.paid);
+      $("#statDone").textContent = m.done;
+      $("#statOngoing").textContent = m.ongoing;
+      $("#statGuests").textContent = m.confirmedGuests;
+      $("#statBalance").textContent = money(m.balance);
+      renderCategoryProgress();
+      renderDeadlines();
+    }
+    function renderCategoryProgress(){
+      const visibleCategories = CATEGORIES.filter(cat=>state.tasks.some(task=>task.category === cat));
+      const target = $("#categoryProgress");
+      if(!visibleCategories.length){
+        target.innerHTML = `<div class="empty-state">No checklist items yet. Add a task and your category progress will appear here.</div>`;
+        return;
+      }
+      target.innerHTML = visibleCategories.map(category=>{
+        const tasks = state.tasks.filter(task=>task.category===category);
+        const complete = tasks.filter(task=>task.status==="Done").length;
+        const percent = tasks.length ? Math.round(complete/tasks.length*100) : 0;
+        return `<div class="category-row">
+          <strong>${escapeHTML(category)}</strong>
+          <div class="small-track"><div class="small-fill" style="width:${percent}%"></div></div>
+          <span>${complete}/${tasks.length}</span>
+        </div>`;
+      }).join("");
+    }
+    function renderDeadlines(){
+      const container = $("#deadlineList");
+      const today = new Date(); today.setHours(0,0,0,0);
+      const upcoming = state.tasks
+        .filter(task=>task.due && task.status !== "Done")
+        .sort((a,b)=>parseDate(a.due)-parseDate(b.due))
+        .slice(0,5);
+      if(!upcoming.length){
+        container.innerHTML = `<div class="empty-state">No upcoming deadlines yet. Add due dates to your checklist to see them here.</div>`;
+        return;
+      }
+      container.innerHTML = upcoming.map(task=>{
+        const due = parseDate(task.due);
+        const days = Math.ceil((due-today)/86400000);
+        let dueCopy = days < 0 ? `${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"} overdue` : days === 0 ? "Due today" : `${days} day${days === 1 ? "" : "s"} left`;
+        return `<div class="deadline">
+          <div class="deadline-dot"></div>
+          <div style="min-width:0">
+            <h4>${escapeHTML(task.title)}</h4>
+            <p>${formatDate(task.due,true)} · ${dueCopy}</p>
+          </div>
+          <span class="status-pill status-${statusClass(task.status)}">${escapeHTML(task.status)}</span>
+        </div>`;
+      }).join("");
+    }
+    function rebuildTaskCategoryFilter(){
+      const filter = $("#taskCategoryFilter");
+      const activeValue = filter.value || "all";
+      filter.innerHTML = `<option value="all">All categories</option>` + CATEGORIES
+        .filter(category=>state.tasks.some(task=>task.category===category))
+        .map(category=>`<option value="${escapeHTML(category)}">${escapeHTML(category)}</option>`).join("");
+      filter.value = [...filter.options].some(option=>option.value===activeValue) ? activeValue : "all";
+    }
+    function renderTasks(){
+      rebuildTaskCategoryFilter();
+      const category = $("#taskCategoryFilter").value;
+      const status = $("#taskStatusFilter").value;
+      const filtered = state.tasks.filter(task=>(category==="all" || task.category===category) && (status==="all" || task.status===status));
+      const list = $("#taskList");
+      if(!filtered.length){
+        list.innerHTML = `<div class="empty-state">No matching checklist item. Try another filter or add a new task.</div>`;
+        return;
+      }
+      const sorted = [...filtered].sort((a,b)=>{
+        const aDone = a.status === "Done", bDone = b.status === "Done";
+        if(aDone !== bDone) return aDone-bDone;
+        if(!a.due) return 1;
+        if(!b.due) return -1;
+        return parseDate(a.due)-parseDate(b.due);
+      });
+      list.innerHTML = sorted.map(task=>`
+        <article class="card task-card" data-task-id="${task.id}">
+          <button class="complete-check ${task.status==="Done" ? "done" : ""}" data-action="toggle-task" aria-label="Mark ${escapeHTML(task.title)} as ${task.status==="Done" ? "not done" : "done"}">${task.status==="Done" ? "✓" : ""}</button>
+          <div class="task-primary">
+            <span class="task-title">${escapeHTML(task.title)}</span>
+            <span class="category-badge">${escapeHTML(task.category)}</span>
+            ${task.notes ? `<p class="task-notes">${escapeHTML(task.notes)}</p>` : ""}
+          </div>
+          <div class="meta"><span class="meta-label">Due date</span><span class="meta-value">${task.due ? formatDate(task.due,true) : "No date"}</span></div>
+          <div class="amount"><span class="meta-label">Budget</span>${money(task.budget)}</div>
+          <div class="amount"><span class="meta-label">Paid</span>${money(task.paid)}</div>
+          <select class="task-select" data-action="task-status" aria-label="Status for ${escapeHTML(task.title)}">
+            <option ${task.status==="To do"?"selected":""}>To do</option>
+            <option ${task.status==="Ongoing"?"selected":""}>Ongoing</option>
+            <option ${task.status==="Done"?"selected":""}>Done</option>
+          </select>
+          <button class="icon-btn delete-task" data-action="edit-task" title="Edit task" aria-label="Edit ${escapeHTML(task.title)}">✎</button>
+        </article>`).join("");
+    }
+    function renderGuests(){
+      const status = $("#guestStatusFilter").value;
+      const side = $("#guestSideFilter").value;
+      const filtered = state.guests.filter(guest=>(status==="all" || guest.rsvp===status) && (side==="all" || guest.side===side))
+        .sort((a,b)=>a.name.localeCompare(b.name));
+      const total = state.guests.length;
+      const confirmed = state.guests.filter(g=>g.rsvp==="Confirmed");
+      const pending = state.guests.filter(g=>g.rsvp==="Pending").length;
+      const pax = confirmed.reduce((sum,g)=>sum+Math.max(1,Number(g.pax || 1)),0);
+      $("#guestTotal").textContent = total;
+      $("#guestConfirmed").textContent = confirmed.length;
+      $("#guestPending").textContent = pending;
+      $("#guestPax").textContent = pax;
+      const list = $("#guestList");
+      if(!filtered.length){
+        list.innerHTML = `<div class="empty-state" style="grid-column:1/-1">No guests to show yet. Add a guest to start tracking your RSVP list.</div>`;
+        return;
+      }
+      list.innerHTML = filtered.map(guest=>`
+        <article class="card guest-card" data-guest-id="${guest.id}">
+          <div class="guest-top">
+            <div>
+              <h3 class="guest-name">${escapeHTML(guest.name)}</h3>
+              <div class="guest-side">${escapeHTML(guest.side)}</div>
+            </div>
+            <span class="status-pill status-${statusClass(guest.rsvp)}">${escapeHTML(guest.rsvp)}</span>
+          </div>
+          <div class="guest-info">
+            <span class="guest-chip">👥 ${Math.max(1,Number(guest.pax || 1))} pax</span>
+            ${guest.contact ? `<span class="guest-chip">☎ ${escapeHTML(guest.contact)}</span>` : ""}
+          </div>
+          ${guest.notes ? `<p>${escapeHTML(guest.notes)}</p>` : `<p>—</p>`}
+          <button class="icon-btn" data-action="edit-guest" style="position:absolute;right:14px;bottom:13px" title="Edit guest" aria-label="Edit ${escapeHTML(guest.name)}">✎</button>
+        </article>`).join("");
+    }
+    function renderBudget(){
+      const m = getMetrics();
+      const hasTarget = m.overallBudget > 0;
+      $("#budgetTarget").textContent = hasTarget ? money(m.overallBudget) : "No set budget";
+      $("#budgetTargetCopy").textContent = hasTarget
+        ? `Your current estimates use ${m.overallBudget ? Math.round((m.budget / m.overallBudget) * 100) : 0}% of your target celebration budget.`
+        : "Set your maximum celebration budget in Celebrant details, then compare it with your checklist estimates.";
+
+      let healthTitle = "Start adding estimates";
+      let healthAmount = "—";
+      let healthCopy = "Add a budget amount on each checklist item to see if your plan stays on track.";
+      let healthProgress = 0;
+      if(hasTarget){
+        healthProgress = Math.min(100, Math.round((m.budget / m.overallBudget) * 100));
+        if(m.budget <= m.overallBudget){
+          healthTitle = "Within your budget target";
+          healthAmount = `${money(m.overallBudget - m.budget)} available`;
+          healthCopy = m.budget
+            ? `Your current estimate is ${money(m.budget)} out of ${money(m.overallBudget)}.`
+            : `Your target is ready—add item estimates to begin planning.`;
+        }else{
+          healthTitle = "Your estimate is over target";
+          healthAmount = `${money(m.budget - m.overallBudget)} over`;
+          healthCopy = `Current estimates total ${money(m.budget)} against a target of ${money(m.overallBudget)}.`;
+        }
+      }
+      $("#budgetHealthTitle").textContent = healthTitle;
+      $("#budgetHealthAmount").textContent = healthAmount;
+      $("#budgetHealthCopy").textContent = healthCopy;
+      $("#budgetTargetBar").style.width = `${healthProgress}%`;
+
+      $("#budgetEstimated").textContent = money(m.budget);
+      $("#budgetPaid").textContent = money(m.paid);
+      $("#budgetRemaining").textContent = money(m.balance);
+      $("#budgetDifference").textContent = hasTarget ? money(Math.abs(m.differenceFromTarget)) : "—";
+      $("#budgetDifferenceLabel").textContent = hasTarget
+        ? (m.differenceFromTarget >= 0 ? "Available from target" : "Over target by")
+        : "Difference from target";
+      $("#budgetDifferenceCopy").textContent = hasTarget
+        ? (m.differenceFromTarget >= 0 ? "Still available after current estimates" : "Amount above your overall budget")
+        : "Set a total budget to compare.";
+
+      const categoryRows = CATEGORIES
+        .map(category=>{
+          const tasks = state.tasks.filter(task=>task.category === category);
+          const estimated = tasks.reduce((sum,task)=>sum + Number(task.budget || 0),0);
+          const paid = tasks.reduce((sum,task)=>sum + Number(task.paid || 0),0);
+          const balance = Math.max(0,estimated - paid);
+          return {category,tasks,estimated,paid,balance};
+        })
+        .filter(item=>item.tasks.length);
+
+      $("#categoryBudgetList").innerHTML = categoryRows.length ? categoryRows.map(item=>{
+        const paymentPercent = item.estimated ? Math.min(100,Math.round((item.paid/item.estimated)*100)) : 0;
+        return `<div class="budget-category-row">
+          <div class="budget-category-top">
+            <strong>${escapeHTML(item.category)}</strong>
+            <span>${money(item.estimated)}</span>
+          </div>
+          <div class="budget-category-meta">
+            <span>Paid: <b>${money(item.paid)}</b></span>
+            <span>To pay: <b>${money(item.balance)}</b></span>
+            <span>${item.tasks.length} item${item.tasks.length === 1 ? "" : "s"}</span>
+          </div>
+          <div class="small-track"><div class="small-fill" style="width:${paymentPercent}%"></div></div>
+        </div>`;
+      }).join("") : `<div class="empty-state">Add checklist items and their budget amounts to build your category breakdown.</div>`;
+
+      const topItems = [...state.tasks]
+        .filter(task=>Number(task.budget || 0) > 0)
+        .sort((a,b)=>Number(b.budget || 0) - Number(a.budget || 0))
+        .slice(0,5);
+      $("#topCostList").innerHTML = topItems.length ? topItems.map(task=>`
+        <div class="top-cost-item">
+          <div>
+            <h4>${escapeHTML(task.title)}</h4>
+            <p>${escapeHTML(task.category)} · Paid ${money(task.paid)}</p>
+          </div>
+          <strong>${money(task.budget)}</strong>
+        </div>`).join("") : `<div class="empty-state">No cost estimates yet. Add a budget amount to any checklist item.</div>`;
+    }
+    function renderAll(){ renderOverview(); renderTasks(); renderBudget(); renderGuests(); }
+
+    function openTaskModal(task=null){
+      $("#taskForm").reset();
+      $("#taskId").value = task?.id || "";
+      $("#taskModalTitle").textContent = task ? "Edit checklist item" : "Add checklist item";
+      populateCategoryOptions(task?.category || "Venue");
+      $("#taskTitleInput").value = task?.title || "";
+      $("#taskStatusInput").value = task?.status || "To do";
+      $("#taskDueInput").value = task?.due || "";
+      $("#taskBudgetInput").value = task?.budget || "";
+      $("#taskPaidInput").value = task?.paid || "";
+      $("#taskNotesInput").value = task?.notes || "";
+      openDialog("taskModal");
+      setTimeout(()=>$("#taskTitleInput").focus(),50);
+    }
+    function openGuestModal(guest=null){
+      $("#guestForm").reset();
+      $("#guestId").value = guest?.id || "";
+      $("#guestModalTitle").textContent = guest ? "Edit guest" : "Add guest";
+      $("#guestNameInput").value = guest?.name || "";
+      $("#guestSideInput").value = guest?.side || "Family";
+      $("#guestRsvpInput").value = guest?.rsvp || "Pending";
+      $("#guestPaxInput").value = Math.max(1,Number(guest?.pax || 1));
+      $("#guestContactInput").value = guest?.contact || "";
+      $("#guestNotesInput").value = guest?.notes || "";
+      openDialog("guestModal");
+      setTimeout(()=>$("#guestNameInput").focus(),50);
+    }
+    function openSettingsModal(){
+      $("#coupleNamesInput").value = state.coupleNames || "";
+      $("#weddingDateInput").value = state.weddingDate || "";
+      $("#overallBudgetInput").value = state.overallBudget || "";
+      openDialog("settingsModal");
+      setTimeout(()=>$("#coupleNamesInput").focus(),50);
+    }
+    function handleTaskSubmit(event){
+      event.preventDefault();
+      const id = $("#taskId").value;
+      const task = {
+        id: id || uid("task"),
+        title: $("#taskTitleInput").value.trim(),
+        category: $("#taskCategoryInput").value,
+        status: $("#taskStatusInput").value,
+        due: $("#taskDueInput").value,
+        budget: Math.max(0,Number($("#taskBudgetInput").value || 0)),
+        paid: Math.max(0,Number($("#taskPaidInput").value || 0)),
+        notes: $("#taskNotesInput").value.trim()
+      };
+      if(!task.title) return;
+      if(id){
+        state.tasks = state.tasks.map(item=>item.id===id ? task : item);
+        toast("Checklist item updated");
+      }else{
+        state.tasks.push(task);
+        toast("Checklist item added");
+      }
+      saveState(); closeDialog("taskModal"); renderAll();
+    }
+    function handleGuestSubmit(event){
+      event.preventDefault();
+      const id = $("#guestId").value;
+      const guest = {
+        id: id || uid("guest"),
+        name: $("#guestNameInput").value.trim(),
+        side: $("#guestSideInput").value,
+        rsvp: $("#guestRsvpInput").value,
+        pax: Math.max(1,Number($("#guestPaxInput").value || 1)),
+        contact: $("#guestContactInput").value.trim(),
+        notes: $("#guestNotesInput").value.trim()
+      };
+      if(!guest.name) return;
+      if(id){
+        state.guests = state.guests.map(item=>item.id===id ? guest : item);
+        toast("Guest updated");
+      }else{
+        state.guests.push(guest);
+        toast("Guest added");
+      }
+      saveState(); closeDialog("guestModal"); renderAll();
+    }
+
+    $$(".nav-button").forEach(button=>button.addEventListener("click",()=>setView(button.dataset.view)));
+    $$("[data-go]").forEach(button=>button.addEventListener("click",()=>setView(button.dataset.go)));
+    $("#openSettings").addEventListener("click",openSettingsModal);
+    $("#openBudgetSettings").addEventListener("click",openSettingsModal);
+    $("#quickAddTask").addEventListener("click",openTaskModal);
+    $("#addTaskBtn").addEventListener("click",openTaskModal);
+    $("#addGuestBtn").addEventListener("click",openGuestModal);
+    $("#taskForm").addEventListener("submit",handleTaskSubmit);
+    $("#guestForm").addEventListener("submit",handleGuestSubmit);
+    $("#settingsForm").addEventListener("submit",event=>{
+      event.preventDefault();
+      state.coupleNames = $("#coupleNamesInput").value.trim();
+      state.weddingDate = $("#weddingDateInput").value;
+      state.overallBudget = Math.max(0, Number($("#overallBudgetInput").value || 0));
+      saveState(); closeDialog("settingsModal"); renderAll(); toast("Celebrant details saved");
+    });
+    $$(".filter-select").forEach(select=>select.addEventListener("change",()=>{
+      if(select.id.startsWith("task")) renderTasks();
+      else renderGuests();
+    }));
+    $$("[data-close]").forEach(button=>button.addEventListener("click",()=>closeDialog(button.dataset.close)));
+
+    $("#taskList").addEventListener("click",event=>{
+      const card = event.target.closest("[data-task-id]");
+      if(!card) return;
+      const task = state.tasks.find(item=>item.id===card.dataset.taskId);
+      if(!task) return;
+      const action = event.target.closest("[data-action]")?.dataset.action;
+      if(action==="toggle-task"){
+        task.status = task.status === "Done" ? "To do" : "Done";
+        saveState(); renderAll(); toast(task.status==="Done" ? "Task marked as done" : "Task moved back to to do");
+      }else if(action==="edit-task"){
+        openTaskModal(task);
+      }
+    });
+    $("#taskList").addEventListener("change",event=>{
+      if(event.target.dataset.action !== "task-status") return;
+      const card = event.target.closest("[data-task-id]");
+      const task = state.tasks.find(item=>item.id===card.dataset.taskId);
+      if(task){
+        task.status = event.target.value;
+        saveState(); renderAll(); toast("Task status updated");
+      }
+    });
+    $("#guestList").addEventListener("click",event=>{
+      const card = event.target.closest("[data-guest-id]");
+      if(!card) return;
+      const guest = state.guests.find(item=>item.id===card.dataset.guestId);
+      if(event.target.closest("[data-action]")?.dataset.action==="edit-guest" && guest) openGuestModal(guest);
+    });
+    document.addEventListener("keydown",event=>{
+      if(event.key==="Escape") $$("dialog[open]").forEach(dialog=>dialog.close());
+    });
+
+    renderAll();
+  </script>
+</body>
+</html>
